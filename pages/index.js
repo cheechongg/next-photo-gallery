@@ -1,115 +1,81 @@
-import Head from 'next/head';
-import styles from '../styles/Home.module.css';
+import Image from 'next/image';
 
-export default function Home() {
+import { BUCKET } from '../utils/awsS3Bucket';
+
+const myLoader = ({ src, width, quality }) => {
+  return `http://localhost:3000/${src}?w=${width}&q=${quality || 75}`;
+};
+
+export default function Home({ images }) {
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+    <main className='mx-auto max-w-[1960px] p-4'>
+      <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
+        <div className='row-span-2'>
+          <div className='flex justify-center items-end h-full after:content relative overflow-hidden rounded-lg bg-white/10 p-8 text-center text-white shadow-highlight after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight'>
+            <a
+              className='pointer z-10 mt-6 rounded-lg border border-white bg-white px-3 py-2 text-sm font-semibold text-black transition hover:bg-white/10 hover:text-white md:mt-4'
+              href='https://vercel.com/new/clone?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-cloudinary&project-name=nextjs-image-gallery&repository-name=with-cloudinary&env=NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET,CLOUDINARY_FOLDER&envDescription=API%20Keys%20from%20Cloudinary%20needed%20to%20run%20this%20application'
+              target='_blank'
+              rel='noreferrer'
+            >
+              Clone and Deploy
+            </a>
+          </div>
         </div>
-      </main>
+        {images.map((image) => (
+          <div
+            key={image.Key}
+            className='after:content group relative cursor-zoom-in after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight'
+          >
+            <Image
+              alt='Next.js Conf photo'
+              className='transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110'
+              style={{ transform: 'translate3d(0, 0, 0)' }}
+              loading='lazy'
+              // placeholder='blur'
+              src={image.url}
+              // blurDataURL='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEBLAEsAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAFAAgDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAABf/EAB8QAQAABAcAAAAAAAAAAAAAAAECAwQUAAUGERJBUf/EABUBAQEAAAAAAAAAAAAAAAAAAAIE/8QAHBEAAQMFAAAAAAAAAAAAAAAAAQACEgMEERQh/9oADAMBAAIRAxEAPwAifoSkcsqpt1GW5EAQBvxB97wNusWxJ4qW2zJYX//Z'
+              width={720}
+              height={480}
+              sizes='(max-width: 640px) 100vw,
+                  (max-width: 1280px) 50vw,
+                  (max-width: 1536px) 33vw,
+                  25vw'
+            />
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
 
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel" className={styles.logo} />
-        </a>
-      </footer>
+export async function getServerSideProps() {
+  // Fetch data from external API
+  const ALBUM_FOLDER = encodeURIComponent('WWDC-Apple-2022') + '/';
+  const images = await new Promise((resolve) => {
+    BUCKET.listObjects({ Prefix: ALBUM_FOLDER }, async function (err, data) {
+      let res = [];
+      let href = this.request.httpRequest.endpoint.href;
+      let bucketUrl = href + process.env.AWS_S3_BUCKET_NAME + '/';
 
-      <style jsx>{`
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        footer img {
-          margin-left: 0.5rem;
-        }
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          text-decoration: none;
-          color: inherit;
-        }
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-      `}</style>
+      if (!err) {
+        res = data.Contents.map((image) => {
+          let photoKey = image.Key;
+          let url = bucketUrl + photoKey;
+          let newImage = { ...image, url };
 
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
-    </div>
-  )
+          return newImage;
+        });
+      }
+
+      resolve(res);
+    });
+  });
+
+  // Pass data to the page via props
+  return {
+    props: {
+      images: JSON.parse(JSON.stringify(images)),
+    },
+  };
 }
