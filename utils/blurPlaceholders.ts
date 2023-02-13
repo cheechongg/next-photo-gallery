@@ -1,9 +1,10 @@
 import imagemin from 'imagemin';
 import imageminJpegtran from 'imagemin-jpegtran';
+import type { ImageProps } from '@/types/GalleryImage';
 
 const cache = new Map();
 
-export default async function getBase64ImageUrl(image) {
+export const getBase64ImageUrl = async (image: ImageProps) : Promise<string> =>  {
   let url = cache.get(image);
   if (url) {
     return url;
