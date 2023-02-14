@@ -26,6 +26,7 @@
       "@/types/*": ["types/*"],
       "@/stores/*": ["stores/*"],
       "@/styles/*": ["assets/styles/*"],
+      "@/pages/*": ["pages/*"],
     }
 
   },
