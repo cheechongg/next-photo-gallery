@@ -25,6 +25,7 @@
       "@/models/*": ["app/models/*"],
       "@/types/*": ["types/*"],
       "@/stores/*": ["stores/*"],
+      "@/styles/*": ["assets/styles/*"],
     }
 
   },
